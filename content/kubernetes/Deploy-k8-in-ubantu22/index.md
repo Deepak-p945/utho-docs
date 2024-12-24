@@ -16,7 +16,6 @@ tab: true
 ---
 
 ## **Deploy Kubernetes cluster in ubuntu 22.04**
-
 This document provides a step-by-step guide to configure a Kubernetes cluster in ubantu.
 
 ---

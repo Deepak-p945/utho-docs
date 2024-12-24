@@ -40,7 +40,7 @@ This document provides a step-by-step guide on connecting to a Kubernetes cluste
  Run the following command to install kubectl:
 
 ```bash
-sudo sna p install kubectl --classic
+sudo snap install kubectl --classic
 ```
 ---
 

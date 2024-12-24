@@ -244,17 +244,17 @@ kubectl get storageclass
 ```
 Check Kubernetes Events (Optional):
 ```bash
-kubectl get events \--sort-by=\'.lastTimestamp\'
+kubectl get events --sort-by='.lastTimestamp'
 ```
 
 ### Step 10: Deploy Ingress NGINX
 
 Install the Ingress `NGINX` Helm Chart:
 ```bash
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx\
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 ```
 ```bash
-helm repo update\
+helm repo update
 ```
 ```bash
 helm install ingress-nginx ingress-nginx/ingress-nginx -f values.yaml
