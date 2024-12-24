@@ -31,7 +31,7 @@ This document provides a step-by-step guide to configure and object storage with
 
 ### **Step 1: Installing `kubectl` Using Snap**
 
- The simplest way to install kubectl on your Ubuntu system is by using
+ The simplest way tos install kubectl on your Ubuntu system is by using
  Snap. Here’s how to do it:
 
 #### 1\. Install kubectl via `Snap`:
@@ -120,12 +120,48 @@ Inside the s3k82.yaml file.
 apiVersion: v1
 kind: Pod
 metadata:
-  name: s3cmd2-pod
+  name: s3cmd-pod
+  labels:
+    app: s3cmd
 spec:
   containers:
-  - name: ubuntu-s3cmd
-    image: ubuntu:latest
-    command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
+  - name: s3cmd-container
+    image: python:3.9-alpine
+    command: ["/bin/sh", "-c"]
+    args:
+    - apk add --no-cache py3-pip bash;
+      pip3 install s3cmd;
+      while true; do sleep 30; done;
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    volumeMounts:
+    - name: config-volume
+      mountPath: /root/.s3cfg
+      subPath: s3cfg
+  volumes:
+  - name: config-volume
+    configMap:
+      name: s3cmd-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3cmd-config
+data:
+  s3cfg: |
+    [default]
+       access_key = YOUR_ACCESS_KEY
+       secret_key = YOUR_SECRET_KEY
+       host_base = innoida.utho.io
+       host_bucket = %(bucket)s.innoida.utho.io
+       use_https = True
+       signature_v2 = False
+
 ```
 ---
 
@@ -148,42 +184,29 @@ spec:
 #### 4. To access the running pod
 
 ```bash
- kubectl exec -it s3cmd2-pod -- /bin/bash
+ kubectl exec -it s3cmd-pod -- /bin/bash
 ```
- Now you are entered in: `s3cmd2-pod:/#`
+ Now you are entered in: `s3cmd-pod:/#`
 
 ---
 
-#### 5. This command to setup the isolated enviorment.
+#### 5. Test Connection to Object Storage:
 
+To check the list of the object.
 ```bash
- s3cmd2-pod:/ apt-get update
+s3cmd ls
 ```
-
+To `upload` a file into the bucket of object storage:
 ```bash
- s3cmd2-pod:/ s3cmd2-pod:/ apt-get update
+s3cmd put -r s3cmm.txt s3://mytesting
 ```
-
+To `download` a file from a bucket:
 ```bash
- s3cmd2-pod:/ s3cmd --version
+s3cmd get s3:///
+mytesting/s3cmm.txt
 ```
-
+To `remove` a file from a bucket:
 ```bash
- s3cmd2-pod:/ s3cmd --configure
+s3cmd del s3:///mytesting/s3cmm.txt
 ```
-
-![](\home\monitoring\utho-docs\content\kubernetes/kubernetes-with-s3cmd/images/s3cmd.png)
-
-#### 6. Some basic command use with `s3cmd`.
-
-```bash
- s3cmd ls
- mkdir -p d1
- cd d1
- touch f{1..10}
- cd ..
- ls
- s3cmd ls s3://kubstorage **(list the object)**
- s3cmd put -r d1 s3://kubstorage **(to upload the file in object storage)**
- s3cmd ls s3://kubstorage
- ```
+---
